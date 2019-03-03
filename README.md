@@ -7,5 +7,5 @@ python2 index.py path_of_directory
 
 Use search.py to search the relevant URLs
 ```
-python2 search.py item
+python2 search.py item results_num
 ```
