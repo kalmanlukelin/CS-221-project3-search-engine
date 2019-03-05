@@ -21,3 +21,6 @@ fixed problem: minus num
 
 
 fixed problem: query with space
+
+
+3/4 fixed problem : input with none exist document
