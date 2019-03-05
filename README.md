@@ -17,10 +17,10 @@ python2 run.py
 
 ![alt text](https://raw.githubusercontent.com/kalmanlukelin/CS-221-project3-search-engine/master/image2.PNG?token=APRQJR74W23u84wFYgBYgwNRQN_3zar7ks5cfJo8wA%3D%3D)
 
-fixed problem: minus num
+3/3 fixed problem: minus num
 
 
-fixed problem: query with space
+3/3 fixed problem: query with space
 
 
 3/4 fixed problem : input with none exist document
