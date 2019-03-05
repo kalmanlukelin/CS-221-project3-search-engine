@@ -8,7 +8,7 @@ import json
 import webbrowser
 import Tkinter as tk
 import sys
-
+import os
 def calculate_Tfidf(tf,df):
 	N=13645
 	return (1+np.log10(tf))*(np.log10(N/df))
@@ -61,7 +61,6 @@ def termProcessing(content):
 	
 	if len(word)>=3 and len(word)<=15 and not isstopwords(word):
 		terms.append(word.lower())
-	print terms
 	get_stem(terms)
 	print terms
 	return terms
@@ -78,16 +77,20 @@ def search(query,top_num):
 	MapFile = "database/WEBPAGES_RAW/bookkeeping.json"
 	hash = get_json(MapFile)
 	query_tokens = termProcessing([query])
-	print query_tokens[0]
+	print query_tokens
 	Documents = {}
 	len_tokens=len(query_tokens)
 	res=[]
 	index = {}
+	results_raw = []
 	for item in query_tokens:
+		if(os.path.isfile(indexPathBase + '/index/' + item[0] + '/' + item[1] + '/' + item[2] + '.json') ==False):
+			continue
 		idx=get_json(indexPathBase + '/index/' + item[0] + '/' + item[1] + '/' + item[2] + '.json')
 		for k in range(len(idx)):
 			if idx[k][0] == item:
 				search_pool = idx[k][1]
+				#print search_pool
 				for (key, value) in search_pool.items():
 					documentName = key.encode('utf-8')
 					#Documents[documentName] = value['tf'.decode('utf-8')]
