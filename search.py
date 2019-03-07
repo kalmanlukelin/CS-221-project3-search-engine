@@ -1,111 +1,144 @@
-from __future__ import division
-from nltk.stem.snowball import SnowballStemmer
-from nltk.corpus import stopwords
 from bs4 import BeautifulSoup, Comment
 import time, re
-import numpy as np
 import json
 import webbrowser
 import Tkinter as tk
 import sys
 import os
-def calculate_Tfidf(tf,df):
-	N=13645
-	return (1+np.log10(tf))*(np.log10(N/df))
+import numpy as np
+import math
 
-def get_json(indexFile):
-	with open(indexFile) as handle:
-		return json.load(handle)
-def getCapitals(content):
-	terms = []
-	word = ""
-	for i in range(len(content)):
-		if len(word) >= 2 and len(word) <= 15 and not isstopwords(word.lower()) and word.isupper():
-			terms.append(word)
-		word = ""
-		for j in range(len(content[i])):
-			# if content[i][j].isalpha() or content[i][j].isdigit() or (content[i][j]=='-' and len(word)>0):
-			if content[i][j].isalpha():
-				word += content[i][j]
-			else:
-				if len(word) >= 3 and len(word) <= 15 and not isstopwords(word.lower()) and word.isupper():
-					terms.append(word)
-				word = ""
-	if len(word) >= 2 and len(word) <= 15 and not isstopwords(word.lower()) and word.isupper():
-		terms.append(word)
-	#get_stem(terms)
-	return terms
-def isstopwords(word):
-	sw = set(stopwords.words('english'))
-	if word in sw:
-		return True
-	else:
-		return False
-def termProcessing(content):
-	terms = []
-	#content = query.split(' ')
-	
-	word=""
-	for i in range(len(content)):
-		if len(word)>=3 and len(word)<=15 and not isstopwords(word):
-			terms.append(word.lower())
-		word = ""
-		for j in range(len(content[i])):
-			if content[i][j].isalpha() or content[i][j].isdigit():
-				word += content[i][j]
-			else:
-				if len(word)>=3 and len(word)<=15 and not isstopwords(word):
-					terms.append(word.lower())
-				word=""
-	
-	
-	if len(word)>=3 and len(word)<=15 and not isstopwords(word):
-		terms.append(word.lower())
-	get_stem(terms)
-	print terms
-	return terms
-def get_stem(content):
-	stemmer = SnowballStemmer('english')
-	for k in range(len(content)):
-		content[k] = stemmer.stem(content[k]).encode('utf-8')
+from nltk.stem.snowball import SnowballStemmer
+from nltk.corpus import stopwords
 
-	#indexPathBase = "/Users/GJzh/Desktop/JunGuo/results/"
-#filePathBase = "/Users/GJzh/Downloads/WEBPAGES_RAW/"
-#D:\18W\information_CS221\CS-221-project3-search-engine-master\database\index
-def search(query,top_num):
-	indexPathBase = "database"
-	MapFile = "database/WEBPAGES_RAW/bookkeeping.json"
-	hash = get_json(MapFile)
-	query_tokens = termProcessing([query])
-	print query_tokens
-	Documents = {}
-	len_tokens=len(query_tokens)
-	res=[]
-	index = {}
-	results_raw = []
-	for item in query_tokens:
-		if(os.path.isfile(indexPathBase + '/index/' + item[0] + '/' + item[1] + '/' + item[2] + '.json') ==False):
-			continue
-		idx=get_json(indexPathBase + '/index/' + item[0] + '/' + item[1] + '/' + item[2] + '.json')
-		for k in range(len(idx)):
-			if idx[k][0] == item:
-				search_pool = idx[k][1]
-				#print search_pool
-				for (key, value) in search_pool.items():
-					documentName = key.encode('utf-8')
-					#Documents[documentName] = value['tf'.decode('utf-8')]
-					Documents[documentName] = value['tf-idf'.decode('utf-8')]
-		results_raw = sorted(Documents.iteritems(), key=lambda d: -d[1])
-	
-	length=len(results_raw)
-	length=min(length, int(top_num))
-	for i in range(length):
-		res.append(hash[results_raw[i][0]])
-	return res
-#items=["Informatics", "Mondego", "Irvine", "artificial intelligence", "computer science"]
-#items=["Informatics", "Mondego", "Irvine"]
+def cal_tf_idf(tf, df):
+    doc_num=37485
+    if tf == 0 or df == 0: return 0
+    return (1+math.log10(tf))*(math.log10(doc_num/df))
 
-#res=search(sys.argv[1],sys.argv[2])
+def load_json(file):
+    with open(file) as f:
+        return json.load(f)
 
+def process_term(term_list):
+    res=[]
+    stopwds=set(stopwords.words('english'))
+    stem = SnowballStemmer('english')
+    for term in term_list:
+        # Replace the non alphabaetical and numeric characters with space.
+        # Change all the characters to lower case
+        # Split characters based on space
+        filter_term=re.compile('[^a-zA-Z0-9]').sub(' ', term).lower().split()
 
-#for r in res: print (r)
+        for ft in filter_term:
+            if len(ft) >= 3 and len(ft) <= 12 and not ft in  stopwds: # Get appropriate length of characters.
+                ft_stemmed=stem.stem(ft)
+                res.append(ft_stemmed)
+    return res # return list of tokens
+
+def compare_func(ele1, ele2):
+    if ele1[1]['ncos_sim'] != ele2[1]['ncos_sim']:
+        return 1 if ele1[1]['ncos_sim'] < ele2[1]['ncos_sim'] else -1
+    return 1 if ele1[1]['cos_sim'] < ele2[1]['cos_sim'] else -1
+
+def cosin_similariy(arr1, arr2):
+    return sum(np.multiply(arr1, arr2))
+
+def search(query, top_num, optimize=True):
+    print "Searching %s" % query
+
+    global path
+
+    # load index and database.
+    bookkeeping = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
+    index=None
+    if not optimize: index = load_json(path+"/dict/index.json")
+
+    # load doc info.
+    doc_info = load_json(path+"/doc/doc.json")
+    
+    query_terms=process_term([query])
+    len_query=len(query_terms)
+    query_tf_idf=np.zeros(len_query)
+    
+    measure_docs={}
+    
+    for i in range(len(query_terms)):
+        # check if the file exists.
+        if not os.path.isfile(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json'): continue
+        
+        if optimize: index=load_json(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json')
+
+        for term_idx in index:
+            # term found.
+            if term_idx[0] == query_terms[i]:
+                docs=term_idx[1]
+                df=len(docs)
+                query_tf_idf[i]=cal_tf_idf(1,df)
+
+                for (key, val) in docs.items():
+                    doc_name=key
+                    tf=val['tf']
+                    tf_idf=val['tf-idf']
+                    if not doc_name in measure_docs:
+                        measure_docs[doc_name]={}
+                        measure_docs[doc_name]['tf-idf']=np.zeros(len_query)
+                    measure_docs[doc_name]['tf-idf'][i]=tf_idf
+                break
+
+    # add normalize tf-idf
+    for doc_name in measure_docs:
+        norm=np.sqrt(sum(measure_docs[doc_name]['tf-idf'] ** 2))
+        if norm == 0: 
+            measure_docs[doc_name]['ntf-idf']=measure_docs[doc_name]['tf-idf']
+        else:
+            measure_docs[doc_name]['ntf-idf']=measure_docs[doc_name]['tf-idf']/norm
+
+    # calculate scores
+    scores={}
+    for doc in measure_docs:
+        scores[doc]={}
+        scores[doc]['ncos_sim']=cosin_similariy(query_tf_idf, measure_docs[doc]['ntf-idf'])
+        scores[doc]['cos_sim']=cosin_similariy(query_tf_idf, measure_docs[doc]['tf-idf'])
+        scores[doc]['jacc']=len_query/doc_info[doc] # Calculate Jaccard coefficient
+
+    # sorted by tf-idf.
+    result=sorted(scores.iteritems(), cmp=compare_func)
+
+    # get the best results.
+    result=result[:int(top_num)]
+    # sort the best results based on Jaccard coefficient.
+    result=sorted(result, key=lambda f : -f[1]['jacc'])
+    
+    urls=[]
+    
+    for doc in result:
+        urls.append(bookkeeping[doc[0]])
+    return urls
+
+global path
+#path=sys.argv[1]
+path="C:/Github/CS-221-project3-search-engine/database"
+'''
+res=search("computer science", 10)
+for r in res:
+	print r
+'''
+
+'''
+with open('query_result', 'w') as r:
+    query=["Informatics", "Mondego", "Irvine", "artificial intelligence", "computer science"]
+
+    for q in query:
+        start=time.time()
+        res= search(q, 10, optimize=True)
+        end=time.time()
+        print>> r, "optimized search time: %d" %(end-start)
+        
+        start=time.time()
+        res= search(q, 10, optimize=False)
+        end=time.time()
+        print>> r, "non-optimized search time: %d" %(end-start)
+
+        print>> r, "\n"
+'''

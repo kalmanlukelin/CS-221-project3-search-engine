@@ -21,11 +21,15 @@ def process():
     global doc_num
     global max_tfidf
     global min_tfidf
+    global doc_info
+
     doc_num=0 # Record the documents processed.
     max_tfidf=0
     min_tfidf=sys.maxsize
 
     term_idx={} # Record the term and it's property.
+    doc_info={} # Record number of unique words for each document
+    #doc_links={} # Record the links information of the doc.
 
     index_file = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
 
@@ -37,6 +41,7 @@ def process():
             f_path=path+"/WEBPAGES_RAW/{}/{}".format(i,j)
             if not os.path.isfile(f_path): continue # File doesn't exist
             doc_id="{}/{}".format(i,j)
+            doc_info[doc_id]=0
 
             with open(f_path) as f:
                 # Porcess the html web page.
@@ -61,6 +66,7 @@ def process():
                         if doc_id not in term_idx[term]:
                             term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                         term_idx[term][doc_id]['tf']+=1
+                        doc_info[doc_id]+=1
                 
                 # process body tag.
                 if page.body is not None:
@@ -73,6 +79,7 @@ def process():
                         if doc_id not in term_idx[term]:
                             term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                         term_idx[term][doc_id]['tf']+=1
+                        doc_info[doc_id]+=1
 
                 # process urls in this page.
                 in_url = index_file[doc_id]
@@ -80,11 +87,27 @@ def process():
                 urls.append(in_url)
 
                 out_urls=page.findAll('a')
+
                 for out_url in out_urls:
                     url=out_url.get('href')
                     url = urljoin(in_url, url)
-                    urls.append(url)
                     
+                    # add number of in urls.
+                    '''
+                    for doc in index_file:
+                        if index_file[doc] == url:
+                            if not doc in doc_links:
+                                doc_links[doc] = {'in_urls': 0, 'out_urls':0}
+                            doc_links[doc]['in_urls']+=1
+                    '''
+                    urls.append(url)
+                
+                # add number of our urls.
+                '''
+                if doc_id not in doc_links:
+                    doc_links[doc_id]={'in_urls': 0, 'out_urls':0}
+                doc_links[doc_id]['out_urls']=len(urls)
+                '''
 
                 url_terms=process_term(urls)
                 for term in url_terms:
@@ -93,6 +116,7 @@ def process():
                     if doc_id not in term_idx[term]:
                         term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                     term_idx[term][doc_id]['urls']+=1 # Count the number of urls in this page.
+                    doc_info[doc_id]+=1
     
     # Calcuate tf-idf
     for term in term_idx:
@@ -196,6 +220,13 @@ def save_dict_tree(term_list):
         with open(f_path, 'w') as outfile:
             outfile.write(json.dumps(sub_res))
 
+def save_doc_info():
+    print "Save doc info !"
+    f_path=path+'/doc/doc.json'
+    check_dir(f_path)
+    with open(f_path, 'w') as outfile:
+        outfile.write(json.dumps(doc_info))
+
 global path
 # path=sys.argv[1]
 path="C:/Github/CS-221-project3-search-engine/database"
@@ -221,3 +252,4 @@ dict_tr_time=end-start
 print "Time for saving the dictionary tree: %2.f seconds." %(dict_tr_time)
 
 save_result(term_dict, build_time, dict_time, dict_tr_time)
+save_doc_info()
