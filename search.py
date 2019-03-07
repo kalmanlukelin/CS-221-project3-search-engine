@@ -44,10 +44,10 @@ def compare_func(ele1, ele2):
 def cosin_similariy(arr1, arr2):
     return sum(np.multiply(arr1, arr2))
 
-def search(query, top_num, optimize=True):
+def search(path, query, top_num, optimize=True):
     print "Searching %s" % query
 
-    global path
+    #global path
 
     # load index and database.
     bookkeeping = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
@@ -115,10 +115,12 @@ def search(query, top_num, optimize=True):
     for doc in result:
         urls.append(bookkeeping[doc[0]])
     return urls
-
+'''
 global path
 #path=sys.argv[1]
 path="C:/Github/CS-221-project3-search-engine/database"
+'''
+
 '''
 res=search("computer science", 10)
 for r in res:

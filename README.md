@@ -2,15 +2,13 @@
 
 Use index.py to build database
 ```
-python2 index.py path_of_directory
+python2 index.py path_of_database
 ```
-Use search.py to build the function to search
 
-
-use run.py to create an interface and search for results
+Use run.py to create an interface and search for results
 
 ```
-python2 run.py
+python2 run.py path_of_database
 ```
 
 ![alt text](https://raw.githubusercontent.com/kalmanlukelin/CS-221-project3-search-engine/master/Image.PNG?token=APRQJWp7ZsB7W0gS-eyMiaOrFwsnUqjWks5cfJspwA%3D%3D)

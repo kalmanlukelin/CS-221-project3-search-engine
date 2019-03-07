@@ -228,8 +228,8 @@ def save_doc_info():
         outfile.write(json.dumps(doc_info))
 
 global path
-# path=sys.argv[1]
-path="C:/Github/CS-221-project3-search-engine/database"
+path=sys.argv[1]
+#path="C:/Github/CS-221-project3-search-engine/database"
 
 start=time.time()
 term_dict=process()

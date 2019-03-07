@@ -2,6 +2,8 @@ import Tkinter
 import tkMessageBox
 import os
 import search
+import sys
+
 window = Tkinter.Tk()
 window.title('my window')
 window.geometry('400x200')
@@ -25,7 +27,7 @@ def helloCallBack():
 	if(num.isdigit()==False):
 		tkMessageBox.showinfo( "Warning", "Please type an Integer")
 		return
-	res = search.search(query,num)
+	res = search.search(sys.argv[1], query, num)
 	result = ""
 	for r in res: result+=r+"\n"+"\n"
 	tkMessageBox.showinfo( "Result", result)
