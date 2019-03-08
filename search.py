@@ -66,10 +66,9 @@ def search(path, query, top_num, optimize=True):
     
     for i in range(len(query_terms)):
         # check if the file exists.
-        if not os.path.isfile(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json'): continue
-        
+        if not os.path.isfile(path + '/dict_tree/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json'): continue
         # load database with opitmization
-        if optimize: index=load_json(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json')
+        if optimize: index=load_json(path + '/dict_tree/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json')
 
         for term_idx in index:
             # term found.
@@ -87,7 +86,7 @@ def search(path, query, top_num, optimize=True):
                         measure_docs[doc_name]['tf-idf']=np.zeros(len_query)
                     measure_docs[doc_name]['tf-idf'][i]=tf_idf
                 break
-
+   
     # calculate scores
     scores={}
     for doc in measure_docs:
@@ -121,9 +120,11 @@ def search(path, query, top_num, optimize=True):
     return urls
 
 '''
-res=search("C:/Github/CS-221-project3-search-engine/database", "Informatics", 10)
-for r in res: print r
+res=search("C:/Github/CS-221-project3-search-engine/database", "computer science", 10)
+for r in res: 
+    print r
 '''
+
 '''
 global path
 #path=sys.argv[1]
