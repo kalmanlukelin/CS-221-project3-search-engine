@@ -34,8 +34,11 @@ def process_term(term_list):
             if len(ft) >= 3 and len(ft) <= 12 and not ft in  stopwds: # Get appropriate length of characters.
                 ft_stemmed=stem.stem(ft)
                 res.append(ft_stemmed)
-    return res # return list of tokens
 
+    # return list of tokens
+    return res 
+
+# Sort it by normailzied cosine similarity first. If it's the same, then sort it without normalization.
 def compare_func(ele1, ele2):
     if ele1[1]['ncos_sim'] != ele2[1]['ncos_sim']:
         return 1 if ele1[1]['ncos_sim'] < ele2[1]['ncos_sim'] else -1
@@ -47,12 +50,10 @@ def cosin_similariy(arr1, arr2):
 def search(path, query, top_num, optimize=True):
     print "Searching %s" % query
 
-    #global path
-
     # load index and database.
     bookkeeping = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
     index=None
-    if not optimize: index = load_json(path+"/dict/index.json")
+    if not optimize: index = load_json(path+"/dict/index.json") # load database withou optimization
 
     # load doc info.
     doc_info = load_json(path+"/doc/doc.json")
@@ -67,6 +68,7 @@ def search(path, query, top_num, optimize=True):
         # check if the file exists.
         if not os.path.isfile(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json'): continue
         
+        # load database with opitmization
         if optimize: index=load_json(path + '/index/' + query_terms[i][0] + '/' + query_terms[i][1] + '/' + query_terms[i][2] + '.json')
 
         for term_idx in index:
@@ -86,27 +88,29 @@ def search(path, query, top_num, optimize=True):
                     measure_docs[doc_name]['tf-idf'][i]=tf_idf
                 break
 
-    # add normalize tf-idf
-    for doc_name in measure_docs:
-        norm=np.sqrt(sum(measure_docs[doc_name]['tf-idf'] ** 2))
-        if norm == 0: 
-            measure_docs[doc_name]['ntf-idf']=measure_docs[doc_name]['tf-idf']
-        else:
-            measure_docs[doc_name]['ntf-idf']=measure_docs[doc_name]['tf-idf']/norm
-
     # calculate scores
     scores={}
     for doc in measure_docs:
+    	norm_doc=np.sqrt(sum(measure_docs[doc_name]['tf-idf'] ** 2))
+    	norm_q=np.sqrt(sum(query_tf_idf ** 2))
+    	vector_doc=measure_docs[doc]['tf-idf']
+    	vector_q=query_tf_idf
+    	n_vector_doc=vector_doc
+    	n_vector_q=vector_q
+    	if norm_doc != 0: n_vector_doc/=norm_doc
+        if norm_q != 0: n_vector_q/=norm_q
+
         scores[doc]={}
-        scores[doc]['ncos_sim']=cosin_similariy(query_tf_idf, measure_docs[doc]['ntf-idf'])
-        scores[doc]['cos_sim']=cosin_similariy(query_tf_idf, measure_docs[doc]['tf-idf'])
+        scores[doc]['ncos_sim']=cosin_similariy(n_vector_doc, n_vector_q) # Normalized cosine similarity
+        scores[doc]['cos_sim']=cosin_similariy(vector_doc, vector_q) # Non-normailzed cosine similarity
         scores[doc]['jacc']=len_query/doc_info[doc] # Calculate Jaccard coefficient
 
-    # sorted by tf-idf.
+    # sorted by cosine sinilarity. 
     result=sorted(scores.iteritems(), cmp=compare_func)
 
     # get the best results.
     result=result[:int(top_num)]
+
     # sort the best results based on Jaccard coefficient.
     result=sorted(result, key=lambda f : -f[1]['jacc'])
     
@@ -115,6 +119,11 @@ def search(path, query, top_num, optimize=True):
     for doc in result:
         urls.append(bookkeeping[doc[0]])
     return urls
+
+'''
+res=search("C:/Github/CS-221-project3-search-engine/database", "Informatics", 10)
+for r in res: print r
+'''
 '''
 global path
 #path=sys.argv[1]

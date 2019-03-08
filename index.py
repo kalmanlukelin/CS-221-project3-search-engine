@@ -29,11 +29,9 @@ def process():
 
     term_idx={} # Record the term and it's property.
     doc_info={} # Record number of unique words for each document
-    #doc_links={} # Record the links information of the doc.
 
     index_file = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
 
-    #num_folders=75
     num_folders=75
     num_files=500
     for i in range(num_folders):
@@ -91,23 +89,7 @@ def process():
                 for out_url in out_urls:
                     url=out_url.get('href')
                     url = urljoin(in_url, url)
-                    
-                    # add number of in urls.
-                    '''
-                    for doc in index_file:
-                        if index_file[doc] == url:
-                            if not doc in doc_links:
-                                doc_links[doc] = {'in_urls': 0, 'out_urls':0}
-                            doc_links[doc]['in_urls']+=1
-                    '''
                     urls.append(url)
-                
-                # add number of our urls.
-                '''
-                if doc_id not in doc_links:
-                    doc_links[doc_id]={'in_urls': 0, 'out_urls':0}
-                doc_links[doc_id]['out_urls']=len(urls)
-                '''
 
                 url_terms=process_term(urls)
                 for term in url_terms:
@@ -126,10 +108,9 @@ def process():
             term_idx[term][doc]['tf-idf']=cal_tf_idf(tf, df)
             if term_idx[term][doc]['tf-idf'] > max_tfidf: max_tfidf=term_idx[term][doc]['tf-idf']
             if term_idx[term][doc]['tf-idf'] < min_tfidf: min_tfidf=term_idx[term][doc]['tf-idf']
-
     return term_idx
 
-# check whether the directory exists
+
 def cal_tf_idf(tf, df):
     global doc_num
     if tf == 0 or df == 0: return 0
@@ -156,6 +137,7 @@ def process_term(term_list):
                 res.append(ft_stemmed)
     return res
 
+# check whether the directory exists
 def check_dir(path):
     if not os.path.exists(os.path.dirname(path)):
         try:
