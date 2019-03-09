@@ -120,7 +120,7 @@ def search(path, query, top_num, optimize=True):
     return urls
 
 '''
-res=search("C:/Github/CS-221-project3-search-engine/database", "computer science", 10)
+res=search("C:/Github/CS-221-project3-search-engine/database", "artifical intelligence", 20)
 for r in res: 
     print r
 '''

@@ -1,40 +1,51 @@
 import Tkinter
+from Tkinter import *
+
 import tkMessageBox
 import os
 import search
 import sys
 
+import webbrowser
+
 window = Tkinter.Tk()
 window.title('my window')
-window.geometry('400x200')
+window.geometry('600x400')
 
-lq = Tkinter.Label(window,text='query')
-lq.pack();
+lt = Tkinter.Label(window, text='Search Engine', fg='black', font=("Helvetica", 50, 'bold'))
+lt.pack(pady=30);
+
+lq = Tkinter.Label(window,text='keywords')
+lq.pack(pady=5);
+
 q = Tkinter.Entry(window) #query
-
 q.pack()
-ln = Tkinter.Label(window,text='num')
-ln.pack();
+
+ln = Tkinter.Label(window,text='numbers')
+ln.pack(pady=5);
+
 n = Tkinter.Entry(window) #num
 n.pack()
-#res=search(sys.argv[1],sys.argv[2])
 
-	#for r in res: print (r)
+path="C:/Github/CS-221-project3-search-engine/database"
+
+    #for r in res: print (r)
 def helloCallBack():
-	query=q.get()
-	query=query.replace(' ','_')
-	num=n.get()
-	if(num.isdigit()==False):
-		tkMessageBox.showinfo( "Warning", "Please type an Integer")
-		return
-	res = search.search(sys.argv[1], query, num)
-	result = ""
-	for r in res: result+=r+"\n"+"\n"
-	tkMessageBox.showinfo( "Result", result)
-	#os.system('python search.py as 5')
-	#os.system('python search.py %s %s' %(query,num,))
+    query=q.get()
+    query=query.replace(' ','_')
+    num=n.get()
+    if(num.isdigit()==False):
+        tkMessageBox.showinfo( "Warning", "Please type an Integer")
+        return
+    res = search.search(path, query, num)
+    result = ""
+    for r in res:
+        print r 
+        result+=r+"\n"+"\n"
+    tkMessageBox.showinfo( "Result", result)
+
    #
-B = Tkinter.Button(window, text ="send", command = helloCallBack)
-                  
-B.pack()
+B = Tkinter.Button(window, text ="search", command = helloCallBack)         
+B.pack(pady=10)
+
 window.mainloop()                 
