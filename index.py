@@ -28,10 +28,11 @@ def process():
     min_tfidf=sys.maxsize
 
     term_idx={} # Record the term and it's property.
-    doc_info={} # Record number of unique words for each document
+    doc_info={} # Record number of unique words and title for each document
 
     index_file = load_json(path+"/WEBPAGES_RAW/bookkeeping.json")
 
+    #75 folders in total
     num_folders=75
     num_files=500
     for i in range(num_folders):
@@ -39,7 +40,8 @@ def process():
             f_path=path+"/WEBPAGES_RAW/{}/{}".format(i,j)
             if not os.path.isfile(f_path): continue # File doesn't exist
             doc_id="{}/{}".format(i,j)
-            doc_info[doc_id]=0
+            #doc_info[doc_id]=0
+            doc_info[doc_id]={"words":0, "title" : "N/A"}
 
             with open(f_path) as f:
                 # Porcess the html web page.
@@ -52,6 +54,11 @@ def process():
 
                 print "process file: {}".format(f_path)
                 doc_num+=1
+                
+                # record page title.
+                if page.title and page.title.string:
+                    #print page.title.string
+                    doc_info[doc_id]["title"]=page.title.string.strip()
 
                 # process head tag.
                 if page.head is not None:
@@ -64,7 +71,9 @@ def process():
                         if doc_id not in term_idx[term]:
                             term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                         term_idx[term][doc_id]['tf']+=1
-                        doc_info[doc_id]+=1
+                        #doc_info[doc_id]+=1
+                        doc_info[doc_id]["words"]+=1
+
                 
                 # process body tag.
                 if page.body is not None:
@@ -77,9 +86,11 @@ def process():
                         if doc_id not in term_idx[term]:
                             term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                         term_idx[term][doc_id]['tf']+=1
-                        doc_info[doc_id]+=1
+                        #doc_info[doc_id]+=1
+                        doc_info[doc_id]["words"]+=1
 
                 # process urls in this page.
+                '''
                 in_url = index_file[doc_id]
                 urls = []
                 urls.append(in_url)
@@ -98,7 +109,9 @@ def process():
                     if doc_id not in term_idx[term]:
                         term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
                     term_idx[term][doc_id]['urls']+=1 # Count the number of urls in this page.
-                    doc_info[doc_id]+=1
+                    #doc_info[doc_id]+=1
+                    doc_info[doc_id]["words"]+=1
+                '''
     
     # Calcuate tf-idf
     for term in term_idx:

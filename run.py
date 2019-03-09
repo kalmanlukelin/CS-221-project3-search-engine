@@ -27,7 +27,8 @@ ln.pack(pady=5);
 n = Tkinter.Entry(window) #num
 n.pack()
 
-path="C:/Github/CS-221-project3-search-engine/database"
+# path="C:/Github/CS-221-project3-search-engine/database"
+path=sys.argv[1]
 
     #for r in res: print (r)
 def helloCallBack():
@@ -40,8 +41,8 @@ def helloCallBack():
     res = search.search(path, query, num)
     result = ""
     for r in res:
-        print r 
-        result+=r+"\n"+"\n"
+        print r[1] 
+        result+=r[1]+"\n"+"\n"
     tkMessageBox.showinfo( "Result", result)
 
    #

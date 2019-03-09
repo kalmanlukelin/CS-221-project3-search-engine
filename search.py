@@ -102,7 +102,8 @@ def search(path, query, top_num, optimize=True):
         scores[doc]={}
         scores[doc]['ncos_sim']=cosin_similariy(n_vector_doc, n_vector_q) # Normalized cosine similarity
         scores[doc]['cos_sim']=cosin_similariy(vector_doc, vector_q) # Non-normailzed cosine similarity
-        scores[doc]['jacc']=len_query/doc_info[doc] # Calculate Jaccard coefficient
+        #scores[doc]['jacc']=len_query/doc_info[doc] # Calculate Jaccard coefficient
+        scores[doc]['jacc']=len_query/doc_info[doc]["words"]
 
     # sorted by cosine sinilarity. 
     result=sorted(scores.iteritems(), cmp=compare_func)
@@ -115,12 +116,13 @@ def search(path, query, top_num, optimize=True):
     
     urls=[]
     
+    
     for doc in result:
-        urls.append(bookkeeping[doc[0]])
+        urls.append((doc_info[doc[0]]["title"], bookkeeping[doc[0]]))
     return urls
 
 '''
-res=search("C:/Github/CS-221-project3-search-engine/database", "artifical intelligence", 20)
+res=search("C:/Github/CS-221-project3-search-engine/database", "artifical intelligence", 10)
 for r in res: 
     print r
 '''
