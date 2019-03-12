@@ -88,30 +88,6 @@ def process():
                         term_idx[term][doc_id]['tf']+=1
                         #doc_info[doc_id]+=1
                         doc_info[doc_id]["words"]+=1
-
-                # process urls in this page.
-                '''
-                in_url = index_file[doc_id]
-                urls = []
-                urls.append(in_url)
-
-                out_urls=page.findAll('a')
-
-                for out_url in out_urls:
-                    url=out_url.get('href')
-                    url = urljoin(in_url, url)
-                    urls.append(url)
-
-                url_terms=process_term(urls)
-                for term in url_terms:
-                    if term not in term_idx:
-                        term_idx[term]={}
-                    if doc_id not in term_idx[term]:
-                        term_idx[term][doc_id]={'tf': 0, 'tf-idf': 0, 'urls': 0}
-                    term_idx[term][doc_id]['urls']+=1 # Count the number of urls in this page.
-                    #doc_info[doc_id]+=1
-                    doc_info[doc_id]["words"]+=1
-                '''
     
     # Calcuate tf-idf
     for term in term_idx:
